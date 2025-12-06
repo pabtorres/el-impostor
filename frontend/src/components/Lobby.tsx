@@ -5,7 +5,16 @@ export default function Lobby({ socket, onShowAbout }: any){
 const [roomId, setRoomId] = useState('room-1')
 const [name, setName] = useState('')
 const [cardsPerPlayer, setCardsPerPlayer] = useState('1')
+const [imageClicks, setImageClicks] = useState(0)
+const [showImageEasterEgg, setShowImageEasterEgg] = useState(false)
 
+const handleImageClick = () => {
+  const newClicks = imageClicks + 1;
+  setImageClicks(newClicks);
+  if (newClicks >= 11) {
+    setShowImageEasterEgg(true);
+  }
+};
 
 const createRoom = () => {
 if (!name || !cardsPerPlayer) return alert('Nombre y número de tarjetas necesarios')
@@ -28,7 +37,14 @@ return (
 <div className="card" style={{maxWidth:'500px', width:'100%'}}>
 <h2>El Impostor — Lobby</h2>
 <div style={{display:'flex', justifyContent:'center', marginBottom:'20px'}}>
-<img src="/images/main-page-image-3.jpg" alt="El Impostor" style={{width:'100%', maxWidth:'400px', borderRadius:'8px'}} />
+<img 
+  src={showImageEasterEgg ? "/images/main-page-easter-egg-image.jpg" : "/images/main-page-image-3.jpg"} 
+  alt="El Impostor" 
+  style={{width:'100%', maxWidth:'400px', borderRadius:'8px', cursor:'pointer', transition:'transform 0.2s'}}
+  onClick={handleImageClick}
+  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+/>
 </div>
 <label className="small">Nombre</label>
 <input value={name} onChange={e=>setName(e.target.value)} placeholder="Tu nombre" />
