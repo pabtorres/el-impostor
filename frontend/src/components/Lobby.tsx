@@ -43,8 +43,8 @@ return (
 
 
 <div style={{display:'flex', gap:8, marginTop:12}}>
-<button onClick={createRoom}>Crear sala</button>
-<button onClick={joinRoom}>Unirse</button>
+<button onClick={createRoom}>🏠 Crear sala</button>
+<button onClick={joinRoom}>➕ Unirse</button>
 </div>
 
 
