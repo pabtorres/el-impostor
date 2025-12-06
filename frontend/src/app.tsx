@@ -4,29 +4,37 @@ import Lobby from './components/Lobby'
 import CardSubmission from './components/CardSubmission'
 import Game from './components/Game'
 
+declare global {
+  interface Window {
+    APP_CONFIG?: {
+      backendUrl?: string
+    }
+  }
+}
+
 // Determine backend URL
-// Try env var first (for build-time config), then check localStorage (for runtime config), then default to LAN
 const getBackendUrl = () => {
-  // Check if we have a stored backend URL (set by user or admin)
-  const storedUrl = window.localStorage.getItem('backendUrl')
-  if (storedUrl) return storedUrl
+  // Check window config first (loaded from config.js)
+  if (window.APP_CONFIG?.backendUrl) {
+    return window.APP_CONFIG.backendUrl
+  }
   
   // Use build-time env var if available
   if (import.meta.env.VITE_BACKEND_URL) {
     return import.meta.env.VITE_BACKEND_URL
   }
   
-  // Default: for LAN/local testing, use localhost:4000; for deployed, use same domain
+  // Default: for LAN/local testing
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     return `${window.location.protocol}//${window.location.hostname}:4000`
   }
   
-  // For production Railway deployment, we need the backend URL
-  // This will be set via VITE_BACKEND_URL env var at build time
+  // Fallback for production
   return `${window.location.protocol}//${window.location.hostname}:4000`
 }
 
 const backendUrl = getBackendUrl()
+console.log('Connecting to backend:', backendUrl)
 const socket = io(backendUrl)
 
 
