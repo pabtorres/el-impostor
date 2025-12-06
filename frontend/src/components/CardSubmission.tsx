@@ -31,7 +31,8 @@ export default function CardSubmission({ socket, roomState, playerId }: any) {
   const canStartGame = allSubmitted && playerCount >= 3
 
   return (
-    <div className="card">
+    <div style={{display:'flex', flexDirection:'column', alignItems:'center', minHeight:'100vh'}}>
+      <div className="card" style={{maxWidth:'600px', width:'100%'}}>
       <h3>Sala: {roomState.id}</h3>
       <p>Jugadores: {Object.values(roomState.players).map((p: any) => p.name).join(', ')}</p>
 
@@ -104,6 +105,13 @@ export default function CardSubmission({ socket, roomState, playerId }: any) {
           )}
         </div>
       )}
+    </div>
+
+    <footer style={{marginTop:'auto', padding:'20px', textAlign:'center', width:'100%', borderTop:'1px solid #ccc'}}>
+      <p style={{margin:'5px 0', fontSize:'14px'}}>
+        © 2025 <a href="https://dcc.uchile.cl/~patorres/" target="_blank" rel="noopener noreferrer" style={{textDecoration:'none', color:'inherit'}}>Pablo Felipe Torres Gutiérrez</a>
+      </p>
+    </footer>
     </div>
   )
 }
