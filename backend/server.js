@@ -11,6 +11,10 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.get('/', (req, res) => {
+  res.json({ message: 'El Impostor Backend Running' });
+});
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -19,7 +23,11 @@ const io = new Server(server, {
     allowedHeaders: ['Content-Type'],
     credentials: false
   },
-  transports: ['websocket', 'polling']
+  transports: ['websocket', 'polling'],
+  pingInterval: 25000,
+  pingTimeout: 60000,
+  maxHttpBufferSize: 1e6,
+  allowUpgrades: true
 });
 
 // Datos en memoria (ejemplo simple). Para producción usar DB.
@@ -256,4 +264,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 4000;
-server.listen(PORT, () => console.log('Server listening on', PORT));
+server.listen(PORT, '0.0.0.0', () => console.log(`Server listening on port ${PORT}`));
