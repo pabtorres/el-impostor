@@ -27,6 +27,8 @@ export default function CardSubmission({ socket, roomState, playerId }: any) {
 
   const allSubmitted = Object.values(roomState.players).every((p: any) => p.cards && p.cards.length > 0)
   const isAdmin = player?.isAdmin
+  const playerCount = Object.keys(roomState.players).length
+  const canStartGame = allSubmitted && playerCount >= 3
 
   return (
     <div className="card">
@@ -79,10 +81,28 @@ export default function CardSubmission({ socket, roomState, playerId }: any) {
         </ul>
       </div>
 
-      {isAdmin && allSubmitted && (
-        <button onClick={startGame} style={{ marginTop: 12, width: '100%', backgroundColor: '#4caf50' }}>
-          ¡Comenzar Juego!
-        </button>
+      {isAdmin && (
+        <div style={{ marginTop: 12 }}>
+          <button 
+            onClick={startGame} 
+            disabled={!canStartGame}
+            style={{ 
+              width: '100%', 
+              backgroundColor: canStartGame ? '#4caf50' : '#ccc',
+              cursor: canStartGame ? 'pointer' : 'not-allowed',
+              opacity: canStartGame ? 1 : 0.6
+            }}
+          >
+            ¡Comenzar Juego!
+          </button>
+          {!canStartGame && (
+            <p className="small" style={{ marginTop: 8, color: '#f44336', textAlign: 'center' }}>
+              {playerCount < 3 
+                ? `Se necesitan al menos 3 jugadores (actualmente: ${playerCount})`
+                : 'Esperando que todos envíen sus tarjetas'}
+            </p>
+          )}
+        </div>
       )}
     </div>
   )
