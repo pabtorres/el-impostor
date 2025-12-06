@@ -24,8 +24,12 @@ if (res.error) alert(res.error)
 
 
 return (
-<div className="card">
+<div style={{display:'flex', flexDirection:'column', alignItems:'center', minHeight:'100vh'}}>
+<div className="card" style={{maxWidth:'500px', width:'100%'}}>
 <h2>El Impostor — Lobby</h2>
+<div style={{display:'flex', justifyContent:'center', marginBottom:'20px'}}>
+<img src="/images/main-page-image.jpg" alt="El Impostor" style={{width:'100%', maxWidth:'400px', borderRadius:'8px'}} />
+</div>
 <label className="small">Nombre</label>
 <input value={name} onChange={e=>setName(e.target.value)} placeholder="Tu nombre" />
 
@@ -45,6 +49,13 @@ return (
 
 
 <p className="small" style={{marginTop:12}}>1. Crea una sala e indica cuántas tarjetas enviará cada jugador. 2. Los demás se unen con el Room ID. 3. Cada jugador escribe sus tarjetas. 4. ¡Comienza el juego!</p>
+</div>
+
+<footer style={{marginTop:'auto', padding:'20px', textAlign:'center', width:'100%', borderTop:'1px solid #ccc'}}>
+<p style={{margin:'5px 0', fontSize:'14px'}}>
+© 2025 <a href="https://dcc.uchile.cl/~patorres/" target="_blank" rel="noopener noreferrer" style={{textDecoration:'none', color:'inherit'}}>Pablo Felipe Torres Gutiérrez</a>
+</p>
+</footer>
 </div>
 )
 }
