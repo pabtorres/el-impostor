@@ -148,6 +148,13 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (!room || !room.currentRound) return cb({ error: 'No round' });
 
+    // Check if all players have voted
+    const allPlayerIds = Object.keys(room.players);
+    const votesCount = Object.keys(room.currentRound.votes).length;
+    if (votesCount !== allPlayerIds.length) {
+      return cb({ error: `Not all players voted. ${votesCount}/${allPlayerIds.length}` });
+    }
+
     // Determine who got most votes
     const votes = Object.values(room.currentRound.votes);
     const tally = votes.reduce((acc, v) => { acc[v] = (acc[v]||0)+1; return acc; }, {});
@@ -214,7 +221,7 @@ io.on('connection', (socket) => {
     room.currentRound = null;
 
     io.to(roomId).emit('room-state', room);
-    io.to(roomId).emit('round-ended', { votedPlayerId, correct, historyItem: room.history[room.history.length-1] });
+    io.to(roomId).emit('round-ended', { votedPlayerId, correct, impostorId, historyItem: room.history[room.history.length-1] });
 
     cb({ ok: true, correct });
   });

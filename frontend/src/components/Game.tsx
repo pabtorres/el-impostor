@@ -2,28 +2,72 @@ import { useEffect, useState } from 'react'
 import Voting from './Voting'
 
 
-export default function Game({ socket, roomState }: any){
+export default function Game({ socket, roomState, playerId }: any){
 const [myPrivate, setMyPrivate] = useState<{card:string,isImpostor:boolean} | null>(null)
 const [tally, setTally] = useState<any>({})
+const [votes, setVotes] = useState<any>({})
 const [history, setHistory] = useState<any[]>([])
+const [roundMessage, setRoundMessage] = useState<string | null>(null)
 
 
 useEffect(()=>{
 socket.on('round-start', (payload:any) => {
 setMyPrivate(payload)
 setTally({})
+setVotes({})
+setRoundMessage(null)
 })
-socket.on('vote-update', (data:any) => { setTally(data.tally) })
-socket.on('round-ended', (data:any) => { setHistory(prev=>[...prev, data.historyItem]); setMyPrivate(null) })
+socket.on('vote-update', (data:any) => { setVotes(data.votes); setTally(data.tally) })
+socket.on('round-ended', (data:any) => { 
+  setHistory(prev=>[...prev, data.historyItem])
+  setMyPrivate(null)
+  setVotes({})
+  
+  // Generate message for this player based on their role
+  const wasImpostor = data.impostorId === playerId
+  let message = ''
+  
+  if (wasImpostor) {
+    message = data.correct 
+      ? '🚨 Te pillaron pos compadre' 
+      : '🤫 Silencioso, silencioso, no te encontraron'
+  } else {
+    message = data.correct
+      ? '🔍 Muy bien Detective'
+      : '😅 Pucha, casi, pero esta vez no'
+  }
+  
+  setRoundMessage(message)
+})
 socket.on('room-state', (rs:any) => { if (rs.history) setHistory(rs.history) })
 }, [])
 
 
 const startNext = () => socket.emit('start-next-round', { roomId: roomState.id }, (res:any)=>{ if (res.error) alert(res.error) })
 const endRound = () => socket.emit('end-round', { roomId: roomState.id }, (res:any)=>{ 
-  if (res.error) alert(res.error); 
-  else alert('Ronda terminada. Correcto? '+res.correct) 
+  if (res.error) {
+    alert(res.error)
+  } else {
+    const wasImpostor = myPrivate?.isImpostor
+    let message = ''
+    
+    if (wasImpostor) {
+      message = res.correct 
+        ? '🚨 Te pillaron pos compadre' 
+        : '🤫 Silencioso, silencioso, no te encontraron'
+    } else {
+      message = res.correct
+        ? '🔍 Muy bien Detective'
+        : '😅 Pucha, casi, pero esta vez no'
+    }
+    
+    setRoundMessage(message)
+  }
 })
+
+const votesCount = Object.keys(votes).length
+const totalPlayers = Object.keys(roomState.players).length
+const allVoted = votesCount === totalPlayers
 
 
 return (
@@ -34,7 +78,13 @@ return (
 
 <div style={{marginTop:8}}>
 <button onClick={startNext}>Iniciar siguiente ronda</button>
-<button onClick={endRound} style={{marginLeft:8}}>Terminar ronda</button>
+<button 
+  onClick={endRound} 
+  style={{marginLeft:8, opacity: allVoted ? 1 : 0.5, cursor: allVoted ? 'pointer' : 'not-allowed'}}
+  disabled={!allVoted}
+>
+  Terminar ronda {myPrivate ? `(${votesCount}/${totalPlayers} votos)` : ''}
+</button>
 </div>
 
 
@@ -57,6 +107,14 @@ return (
 
 
 <Voting socket={socket} players={roomState.players} tally={tally} roomId={roomState.id} />
+
+{roundMessage && (
+<div style={{marginTop:12, padding:16, backgroundColor:'#fff3cd', borderRadius:8, border:'2px solid #ffc107', textAlign:'center'}}>
+<p style={{fontSize:'1.2rem', fontWeight:'bold', margin:0, color:'#856404'}}>
+{roundMessage}
+</p>
+</div>
+)}
 
 <div style={{marginTop:12}}>
 <h4>🏆 Tabla de posiciones</h4>
