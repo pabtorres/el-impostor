@@ -19,7 +19,6 @@ setRoundMessage(null)
 })
 socket.on('vote-update', (data:any) => { setVotes(data.votes); setTally(data.tally) })
 socket.on('round-ended', (data:any) => { 
-  setHistory(prev=>[...prev, data.historyItem])
   setMyPrivate(null)
   setVotes({})
   
@@ -68,6 +67,7 @@ const endRound = () => socket.emit('end-round', { roomId: roomState.id }, (res:a
 const votesCount = Object.keys(votes).length
 const totalPlayers = Object.keys(roomState.players).length
 const allVoted = votesCount === totalPlayers
+const roundActive = !!roomState.currentRound
 
 
 return (
@@ -77,7 +77,13 @@ return (
 
 
 <div style={{marginTop:8}}>
-<button onClick={startNext}>Iniciar siguiente ronda</button>
+<button 
+  onClick={startNext} 
+  disabled={roundActive}
+  style={{opacity: roundActive ? 0.5 : 1, cursor: roundActive ? 'not-allowed' : 'pointer'}}
+>
+  {roundActive ? 'Ronda en curso' : 'Iniciar siguiente ronda'}
+</button>
 <button 
   onClick={endRound} 
   style={{marginLeft:8, opacity: allVoted ? 1 : 0.5, cursor: allVoted ? 'pointer' : 'not-allowed'}}
@@ -106,7 +112,7 @@ return (
 ) : (<p style={{marginTop:12}}>No hay ronda privada para ti ahora.</p>)}
 
 
-<Voting socket={socket} players={roomState.players} tally={tally} roomId={roomState.id} />
+<Voting socket={socket} players={roomState.players} tally={tally} roomId={roomState.id} playerId={playerId} />
 
 {roundMessage && (
 <div style={{marginTop:12, padding:16, backgroundColor:'#fff3cd', borderRadius:8, border:'2px solid #ffc107', textAlign:'center'}}>
@@ -173,6 +179,7 @@ return (
 {p.name.substring(0, 8)}
 </th>
 ))}
+<th style={{padding: '6px', textAlign: 'center', borderRight: '1px solid #ddd', minWidth: '70px'}}>Emitidos</th>
 <th style={{padding: '6px', textAlign: 'center', minWidth: '60px'}}>✓/✗</th>
 </tr>
 </thead>
@@ -186,6 +193,7 @@ const voterIncorrect = history.filter((h: any) => {
   const votedForImpostor = h.votes[voter.id] === h.impostorId;
   return votedForImpostor && !h.correct;
 }).length;
+const votesCast = history.filter((h:any)=> !!h.votes[voter.id]).length;
 return (
 <tr key={voter.id} style={{borderBottom: '1px solid #eee', backgroundColor: voter.id === roomState.players[Object.keys(roomState.players)[0]]?.id ? '#f9f9f9' : 'white'}}>
 <td style={{padding: '6px', fontWeight: '500', borderRight: '1px solid #ddd'}}>{voter.name.substring(0, 8)}</td>
@@ -204,6 +212,7 @@ return (
     </td>
   );
 })}
+<td style={{padding:'6px', textAlign:'center', borderRight:'1px solid #ddd', fontWeight:'500'}}>{votesCast}</td>
 <td style={{padding: '6px', textAlign: 'center', fontWeight: '500'}}>
 <span style={{color: '#5cb85c', marginRight: '4px'}}>{voterCorrect}</span>
 <span style={{color: '#d9534f'}}>{voterIncorrect}</span>
@@ -216,6 +225,45 @@ return (
 </div>
 ) : (
 <p className="small">Sin votos aún. ¡Juega la primera ronda!</p>
+)}
+</div>
+
+<div style={{marginTop:12}}>
+<h4>Historial de votos por ronda</h4>
+{history.length > 0 ? (
+  <div style={{overflowX:'auto'}}>
+    <table style={{width:'100%', borderCollapse:'collapse', fontSize:'0.8rem'}}>
+      <thead>
+        <tr style={{background:'#f5f5f5', borderBottom:'2px solid #ddd'}}>
+          <th style={{padding:'6px', textAlign:'left'}}>Ronda</th>
+          <th style={{padding:'6px', textAlign:'left'}}>Tarjeta</th>
+          {Object.values(roomState.players).map((p:any)=>(
+            <th key={`rhead-${p.id}`} style={{padding:'6px', textAlign:'center'}}>{p.name.substring(0,8)}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {history.slice().map((h:any, idx:number)=>{
+          const roundNumber = idx + 1;
+          return (
+            <tr key={`round-${idx}`} style={{borderBottom:'1px solid #eee'}}>
+              <td style={{padding:'6px', fontWeight:'500'}}>{roundNumber}</td>
+              <td style={{padding:'6px'}}>{h.chosenCard}</td>
+              {Object.values(roomState.players).map((p:any)=>{
+                const votedId = h.votes[p.id];
+                const votedName = votedId ? (roomState.players[votedId]?.name || '—') : '—';
+                return (
+                  <td key={`rv-${idx}-${p.id}`} style={{padding:'6px', textAlign:'center', color:'#0275d8'}}>{votedName}</td>
+                );
+              })}
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+) : (
+  <p className="small">Aún no hay rondas finalizadas.</p>
 )}
 </div>
 

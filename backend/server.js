@@ -87,6 +87,7 @@ io.on('connection', (socket) => {
   socket.on('start-next-round', ({ roomId }, cb) => {
     const room = rooms[roomId];
     if (!room) return cb({ error: 'No room' });
+    if (room.currentRound) return cb({ error: 'Round already in progress' });
 
     // Choose a card randomly from remaining deck
     if (room.deck.length === 0) return cb({ error: 'No more cards' });
@@ -132,6 +133,8 @@ io.on('connection', (socket) => {
   socket.on('vote', ({ roomId, targetPlayerId }, cb) => {
     const room = rooms[roomId];
     if (!room || !room.currentRound) return cb({ error: 'No round' });
+    if (targetPlayerId === socket.id) return cb({ error: 'No puedes votarte a ti mismo' });
+    if (!room.players[targetPlayerId]) return cb({ error: 'Jugador no válido' });
 
     room.currentRound.votes[socket.id] = targetPlayerId;
 
