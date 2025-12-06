@@ -115,6 +115,9 @@ export default function CardSubmission({ socket, roomState, playerId }: any) {
       <p style={{margin:'5px 0', fontSize:'14px'}}>
         © 2025 <a href="https://dcc.uchile.cl/~patorres/" target="_blank" rel="noopener noreferrer" style={{textDecoration:'none', color:'inherit'}}>Pablo Felipe Torres Gutiérrez</a>
       </p>
+      <p style={{margin:'8px 0', fontSize:'12px'}}>
+        <a href="https://buymeacoffee.com/pabtorres" target="_blank" rel="noopener noreferrer" style={{textDecoration:'none', color:'#0275d8', fontWeight:500}}>☕ Invítame una Limonada Menta Jengibre</a>
+      </p>
     </footer>
     </div>
   )
