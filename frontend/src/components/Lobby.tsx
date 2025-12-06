@@ -28,7 +28,7 @@ return (
 <div className="card" style={{maxWidth:'500px', width:'100%'}}>
 <h2>El Impostor — Lobby</h2>
 <div style={{display:'flex', justifyContent:'center', marginBottom:'20px'}}>
-<img src="/images/main-page-image.jpg" alt="El Impostor" style={{width:'100%', maxWidth:'400px', borderRadius:'8px'}} />
+<img src="/images/main-page-image-2.jpg" alt="El Impostor" style={{width:'100%', maxWidth:'400px', borderRadius:'8px'}} />
 </div>
 <label className="small">Nombre</label>
 <input value={name} onChange={e=>setName(e.target.value)} placeholder="Tu nombre" />
