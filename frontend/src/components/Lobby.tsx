@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 
-export default function Lobby({ socket }: any){
+export default function Lobby({ socket, onShowAbout }: any){
 const [roomId, setRoomId] = useState('room-1')
 const [name, setName] = useState('')
 const [cardsPerPlayer, setCardsPerPlayer] = useState('1')
@@ -45,6 +45,7 @@ return (
 <div style={{display:'flex', gap:8, marginTop:12}}>
 <button onClick={createRoom}>🏠 Crear sala</button>
 <button onClick={joinRoom}>➕ Unirse</button>
+<button onClick={onShowAbout} style={{marginLeft:'auto'}}>ℹ️ Sobre el proyecto</button>
 </div>
 
 
