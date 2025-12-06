@@ -6,9 +6,20 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: '*' }
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type'],
+    credentials: false
+  },
+  transports: ['websocket', 'polling']
 });
 
 // Datos en memoria (ejemplo simple). Para producción usar DB.
