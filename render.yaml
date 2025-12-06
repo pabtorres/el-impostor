@@ -14,5 +14,8 @@ services:
   - type: web
     name: impostor-frontend
     env: static
-    buildCommand: cd frontend && npm install && VITE_BACKEND_URL=https://impostor-backend.onrender.com npm run build
+    buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_BACKEND_URL
+        value: https://impostor-backend.onrender.com
