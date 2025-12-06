@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import io from 'socket.io-client'
 import Lobby from './components/Lobby'
+import CardSubmission from './components/CardSubmission'
 import Game from './components/Game'
 
 
@@ -25,6 +26,8 @@ return (
 <div className="app-root">
 {!roomState ? (
 <Lobby socket={socket} />
+) : roomState.gameState === 'waiting' || roomState.gameState === 'submitting' ? (
+<CardSubmission socket={socket} roomState={roomState} playerId={playerId} />
 ) : (
 <Game socket={socket} roomState={roomState} playerId={playerId} />
 )}

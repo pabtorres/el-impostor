@@ -23,20 +23,21 @@ function makeDeckFromCards(cards) {
 io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
 
-  socket.on('create-room', ({ roomId, playerName, cards }, cb) => {
+  socket.on('create-room', ({ roomId, playerName, cardsPerPlayer }, cb) => {
     if (rooms[roomId]) return cb({ error: 'Room exists' });
 
     const players = {};
-    players[socket.id] = { id: socket.id, name: playerName };
+    players[socket.id] = { id: socket.id, name: playerName, cards: [], isAdmin: true };
 
     rooms[roomId] = {
       id: roomId,
       players,
-      cards, // array length n
-      deck: makeDeckFromCards(cards),
+      cardsPerPlayer,
+      gameState: 'waiting',
+      deck: [],
       currentRound: null,
       history: [],
-      stats: {} // { playerId: { ninja: 0, detective: 0, unbelieved: 0 } }
+      stats: {}
     };
 
     socket.join(roomId);
@@ -47,11 +48,38 @@ io.on('connection', (socket) => {
   socket.on('join-room', ({ roomId, playerName }, cb) => {
     const room = rooms[roomId];
     if (!room) return cb({ error: 'Room not found' });
-    if (Object.keys(room.players).length >= room.cards.length)
-      return cb({ error: 'Room full' });
 
-    room.players[socket.id] = { id: socket.id, name: playerName };
+    room.players[socket.id] = { id: socket.id, name: playerName, cards: [], isAdmin: false };
     socket.join(roomId);
+    io.to(roomId).emit('room-state', room);
+    cb({ ok: true });
+  });
+
+  socket.on('submit-cards', ({ roomId, cards }, cb) => {
+    const room = rooms[roomId];
+    if (!room) return cb({ error: 'Room not found' });
+
+    const player = room.players[socket.id];
+    if (!player) return cb({ error: 'Player not found' });
+    if (cards.length !== room.cardsPerPlayer) 
+      return cb({ error: `Submit exactly ${room.cardsPerPlayer} cards` });
+
+    player.cards = cards;
+    io.to(roomId).emit('room-state', room);
+    cb({ ok: true });
+  });
+
+  socket.on('start-game', ({ roomId }, cb) => {
+    const room = rooms[roomId];
+    if (!room) return cb({ error: 'Room not found' });
+
+    const allSubmitted = Object.values(room.players).every(p => p.cards && p.cards.length === room.cardsPerPlayer);
+    if (!allSubmitted) return cb({ error: 'Not all players submitted cards' });
+
+    const allCards = Object.values(room.players).flatMap(p => p.cards);
+    room.deck = [...allCards];
+    room.gameState = 'playing';
+    
     io.to(roomId).emit('room-state', room);
     cb({ ok: true });
   });

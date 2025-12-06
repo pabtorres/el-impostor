@@ -4,13 +4,12 @@ import { useState } from 'react'
 export default function Lobby({ socket }: any){
 const [roomId, setRoomId] = useState('room-1')
 const [name, setName] = useState('')
-const [cardsText, setCardsText] = useState('')
+const [cardsPerPlayer, setCardsPerPlayer] = useState('1')
 
 
 const createRoom = () => {
-const cards = cardsText.split('\n').map(s => s.trim()).filter(Boolean)
-if (!name || cards.length === 0) return alert('Nombre y tarjetas necesarias (una por jugador)')
-socket.emit('create-room', { roomId, playerName: name, cards }, (res:any) => {
+if (!name || !cardsPerPlayer) return alert('Nombre y número de tarjetas necesarios')
+socket.emit('create-room', { roomId, playerName: name, cardsPerPlayer: parseInt(cardsPerPlayer) }, (res:any) => {
 if (res.error) alert(res.error)
 })
 }
@@ -35,8 +34,8 @@ return (
 <input value={roomId} onChange={e=>setRoomId(e.target.value)} />
 
 
-<label className="small" style={{marginTop:8}}>Tarjetas (una por línea, solo al crear)</label>
-<textarea rows={6} value={cardsText} onChange={e=>setCardsText(e.target.value)} placeholder={`Ej:\nLeña\nEstufa\nLluvia`} />
+<label className="small" style={{marginTop:8}}>Tarjetas por jugador (solo al crear)</label>
+<input type="number" min="1" value={cardsPerPlayer} onChange={e=>setCardsPerPlayer(e.target.value)} placeholder="Ej: 2" />
 
 
 <div style={{display:'flex', gap:8, marginTop:12}}>
@@ -45,7 +44,7 @@ return (
 </div>
 
 
-<p className="small" style={{marginTop:12}}>Nota: la persona que crea la sala debe pegar N tarjetas (N = número jugadores). Cada partida usa una tarjeta y se reparten réplicas.</p>
+<p className="small" style={{marginTop:12}}>1. Crea una sala e indica cuántas tarjetas enviará cada jugador. 2. Los demás se unen con el Room ID. 3. Cada jugador escribe sus tarjetas. 4. ¡Comienza el juego!</p>
 </div>
 )
 }
