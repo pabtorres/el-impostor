@@ -33,6 +33,10 @@ export default function CardSubmission({ socket, roomState, playerId }: any) {
   return (
     <div style={{display:'flex', flexDirection:'column', alignItems:'center', minHeight:'100vh'}}>
       <div className="card" style={{maxWidth:'600px', width:'100%'}}>
+      <h2>Waiting Room</h2>
+      <div style={{display:'flex', justifyContent:'center', marginBottom:'20px'}}>
+        <img src="/images/waiting-room-page-image.jpg" alt="Waiting Room" style={{width:'100%', maxWidth:'100%', borderRadius:'8px', aspectRatio:'16/9', objectFit:'cover'}} />
+      </div>
       <h3>Sala: {roomState.id}</h3>
       <p>Jugadores: {Object.values(roomState.players).map((p: any) => p.name).join(', ')}</p>
 
