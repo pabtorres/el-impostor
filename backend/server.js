@@ -139,6 +139,9 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (!room) return cb({ error: 'Room not found' });
 
+    const playerCount = Object.keys(room.players).length;
+    if (playerCount < 3) return cb({ error: 'Se necesitan al menos 3 jugadores para empezar' });
+
     const allSubmitted = Object.values(room.players).every(p => p.cards && p.cards.length === room.cardsPerPlayer);
     if (!allSubmitted) return cb({ error: 'Not all players submitted cards' });
 
@@ -154,6 +157,9 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (!room) return cb({ error: 'No room' });
     if (room.currentRound) return cb({ error: 'Round already in progress' });
+
+    const playerCount = Object.keys(room.players).length;
+    if (playerCount < 3) return cb({ error: 'Se necesitan al menos 3 jugadores para iniciar una ronda' });
 
     // Choose a card randomly from remaining deck
     if (room.deck.length === 0) return cb({ error: 'No more cards' });
