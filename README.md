@@ -35,3 +35,8 @@ The frontend will automatically open at `http://localhost:5173`
 - **Backend**: Express + Socket.io for real-time game state management
 - **Frontend**: React + TypeScript + Vite for fast development
 - **Communication**: WebSocket-based bidirectional communication
+
+## Support the Project
+If you like the project, you can support it by inviting me a **Limonada Menta Jengibre**:
+
+[Buy a "Limonada Menta Jengibre"](https://buymeacoffee.com/pabtorres)
