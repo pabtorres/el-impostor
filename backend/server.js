@@ -33,10 +33,55 @@ const io = new Server(server, {
 // Datos en memoria (ejemplo simple). Para producción usar DB.
 let rooms = {}; // { roomId: { players: {}, deck: [], playedCards: [], history: [...] } }
 
+// Room cleanup configuration
+const ROOM_CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const ROOM_INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes of inactivity
+
+// Track room activity
+let roomActivity = {}; // { roomId: lastActivityTime }
+
+// Periodic cleanup function
+function cleanupInactiveRooms() {
+  const now = Date.now();
+  let cleanedCount = 0;
+
+  Object.keys(rooms).forEach(roomId => {
+    const room = rooms[roomId];
+    const lastActivity = roomActivity[roomId] || 0;
+    const timeSinceActivity = now - lastActivity;
+
+    // Remove rooms with no players
+    if (Object.keys(room.players).length === 0) {
+      delete rooms[roomId];
+      delete roomActivity[roomId];
+      cleanedCount++;
+      console.log(`[CLEANUP] Removed empty room: ${roomId}`);
+    }
+    // Remove rooms inactive for too long
+    else if (timeSinceActivity > ROOM_INACTIVITY_TIMEOUT) {
+      delete rooms[roomId];
+      delete roomActivity[roomId];
+      cleanedCount++;
+      console.log(`[CLEANUP] Removed inactive room: ${roomId} (inactive for ${Math.floor(timeSinceActivity / 1000)}s)`);
+    }
+  });
+
+  if (cleanedCount > 0) {
+    console.log(`[CLEANUP] Cleaned up ${cleanedCount} room(s). Active rooms: ${Object.keys(rooms).length}`);
+  }
+}
+
+// Start cleanup interval
+setInterval(cleanupInactiveRooms, ROOM_CLEANUP_INTERVAL);
+
 // Helpers
 function makeDeckFromCards(cards) {
   // cards: array of strings (one per player initially)
   return [...cards];
+}
+
+function recordActivity(roomId) {
+  roomActivity[roomId] = Date.now();
 }
 
 io.on('connection', (socket) => {
@@ -59,6 +104,7 @@ io.on('connection', (socket) => {
       stats: {}
     };
 
+    recordActivity(roomId);
     socket.join(roomId);
     cb({ ok: true });
     io.to(roomId).emit('room-state', rooms[roomId]);
@@ -78,6 +124,7 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (!room) return cb({ error: 'Room not found' });
 
+    recordActivity(roomId);
     const player = room.players[socket.id];
     if (!player) return cb({ error: 'Player not found' });
     if (cards.length !== room.cardsPerPlayer) 
@@ -152,6 +199,7 @@ io.on('connection', (socket) => {
   socket.on('vote', ({ roomId, targetPlayerId }, cb) => {
     const room = rooms[roomId];
     if (!room || !room.currentRound) return cb({ error: 'No round' });
+    recordActivity(roomId);
     if (targetPlayerId === socket.id) return cb({ error: 'No puedes votarte a ti mismo' });
     if (!room.players[targetPlayerId]) return cb({ error: 'Jugador no válido' });
 
@@ -169,6 +217,7 @@ io.on('connection', (socket) => {
   socket.on('end-round', ({ roomId }, cb) => {
     const room = rooms[roomId];
     if (!room || !room.currentRound) return cb({ error: 'No round' });
+    recordActivity(roomId);
 
     // Check if all players have voted
     const allPlayerIds = Object.keys(room.players);
