@@ -4,8 +4,9 @@ import Lobby from './components/Lobby'
 import CardSubmission from './components/CardSubmission'
 import Game from './components/Game'
 
-
-const socket = io('http://localhost:4000')
+// Allow configuring backend URL for LAN/phone testing
+const backendUrl = import.meta.env.VITE_BACKEND_URL || `${window.location.protocol}//${window.location.hostname}:4000`
+const socket = io(backendUrl)
 
 
 export default function App(){
