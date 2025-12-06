@@ -1,13 +1,29 @@
+import { useState } from 'react'
+
 export default function About({ onBack }: any) {
+  const [imageClicks, setImageClicks] = useState(0);
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
+  
+  const handleImageClick = () => {
+    const newClicks = imageClicks + 1;
+    setImageClicks(newClicks);
+    if (newClicks >= 6) {
+      setShowEasterEgg(true);
+    }
+  };
+
   return (
     <div style={{display:'flex', flexDirection:'column', alignItems:'center', minHeight:'100vh'}}>
       <div className="card" style={{maxWidth:'600px', width:'100%'}}>
         <h2>Sobre "El Impostor"</h2>
         <div style={{display:'flex', justifyContent:'center', marginBottom:'20px'}}>
           <img
-            src="/images/about-page-image.jpg"
-            alt="El Impostor"
-            style={{width:'100%', maxWidth:'480px', borderRadius:'12px', boxShadow:'0 6px 18px rgba(0,0,0,0.12)'}}
+            src={showEasterEgg ? "/images/easter-egg-image.jpg" : "/images/about-page-image.jpg"}
+            alt="El Impostor - Easter Egg"
+            style={{width:'100%', maxWidth:'480px', borderRadius:'12px', boxShadow:'0 6px 18px rgba(0,0,0,0.12)', cursor:'pointer', transition:'transform 0.2s'}}
+            onClick={handleImageClick}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           />
         </div>
         <p style={{lineHeight:1.6}}>
