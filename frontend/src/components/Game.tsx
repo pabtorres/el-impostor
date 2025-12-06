@@ -43,6 +43,13 @@ socket.on('room-state', (rs:any) => { if (rs.history) setHistory(rs.history) })
 
 
 const startNext = () => socket.emit('start-next-round', { roomId: roomState.id }, (res:any)=>{ if (res.error) alert(res.error) })
+const endGame = () => {
+  socket.emit('end-game', { roomId: roomState.id }, (res:any) => {
+    if (res.error) {
+      alert(res.error);
+    }
+  });
+}
 const endRound = () => socket.emit('end-round', { roomId: roomState.id }, (res:any)=>{ 
   if (res.error) {
     alert(res.error)
@@ -68,6 +75,7 @@ const votesCount = Object.keys(votes).length
 const totalPlayers = Object.keys(roomState.players).length
 const allVoted = votesCount === totalPlayers
 const roundActive = !!roomState.currentRound
+const noMoreCards = roomState.deck && roomState.deck.length === 0
 
 
 return (
@@ -77,13 +85,27 @@ return (
 
 
 <div style={{marginTop:8}}>
+{noMoreCards && !roundActive ? (
+  <div style={{marginBottom:12, padding:16, backgroundColor:'#fff3cd', borderRadius:8, border:'2px solid #ffc107', textAlign:'center'}}>
+    <p style={{margin:0, marginBottom:12, fontWeight:600, color:'#856404', fontSize:'1.1rem'}}>
+      🎉 ¡No quedan más tarjetas!
+    </p>
+    <button 
+      onClick={endGame}
+      style={{width:'100%', padding:'12px', backgroundColor:'#d9534f', color:'white', fontWeight:600, fontSize:'1rem', border:'none', borderRadius:'8px', cursor:'pointer'}}
+    >
+      🏁 End Game
+    </button>
+  </div>
+) : (
 <button 
   onClick={startNext} 
-  disabled={roundActive}
-  style={{opacity: roundActive ? 0.5 : 1, cursor: roundActive ? 'not-allowed' : 'pointer'}}
+  disabled={roundActive || noMoreCards}
+  style={{opacity: (roundActive || noMoreCards) ? 0.5 : 1, cursor: (roundActive || noMoreCards) ? 'not-allowed' : 'pointer'}}
 >
   {roundActive ? 'Ronda en curso' : 'Iniciar siguiente ronda'}
 </button>
+)}
 <button 
   onClick={endRound} 
   style={{marginLeft:8, opacity: allVoted ? 1 : 0.5, cursor: allVoted ? 'pointer' : 'not-allowed'}}

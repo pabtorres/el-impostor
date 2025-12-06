@@ -84,6 +84,56 @@ function recordActivity(roomId) {
   roomActivity[roomId] = Date.now();
 }
 
+// Compute simple awards for end game summary
+function computeAwards(history, players) {
+  const perPlayer = {};
+  Object.keys(players).forEach(pid => {
+    perPlayer[pid] = {
+      impostorRounds: 0,
+      detectedAsImpostor: 0,
+      undetectedAsImpostor: 0,
+      detectedImpostorRounds: 0
+    };
+  });
+
+  history.forEach(round => {
+    const impostorId = round.impostorId;
+    if (impostorId && perPlayer[impostorId]) {
+      perPlayer[impostorId].impostorRounds += 1;
+      if (round.correct) {
+        perPlayer[impostorId].detectedAsImpostor += 1;
+      } else {
+        perPlayer[impostorId].undetectedAsImpostor += 1;
+      }
+    }
+
+    // Count detectives: voters who chose the impostor
+    Object.entries(round.votes || {}).forEach(([voterId, votedId]) => {
+      if (votedId === impostorId && perPlayer[voterId]) {
+        perPlayer[voterId].detectedImpostorRounds += 1;
+      }
+    });
+  });
+
+  const pickMax = (metric) => {
+    let winner = null;
+    let maxVal = -1;
+    Object.entries(perPlayer).forEach(([pid, stats]) => {
+      if (stats[metric] > maxVal) {
+        maxVal = stats[metric];
+        winner = { playerId: pid, name: players[pid]?.name || 'Unknown', value: stats[metric] };
+      }
+    });
+    return maxVal > 0 ? winner : null;
+  };
+
+  return {
+    mostDetectedImpostor: pickMax('detectedAsImpostor'),
+    mostUndetectedImpostor: pickMax('undetectedAsImpostor'),
+    topDetective: pickMax('detectedImpostorRounds')
+  };
+}
+
 io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
 
@@ -301,6 +351,30 @@ io.on('connection', (socket) => {
     io.to(roomId).emit('round-ended', { votedPlayerId, correct, impostorId, historyItem: room.history[room.history.length-1] });
 
     cb({ ok: true, correct });
+  });
+
+  socket.on('end-game', ({ roomId }, cb) => {
+    const room = rooms[roomId];
+    if (!room) return cb({ error: 'Room not found' });
+    
+    console.log(`[END-GAME] Room ${roomId} - Deleting room and freeing RAM`);
+    
+    // Calculate final stats before deleting
+    const finalStats = {
+      stats: room.stats,
+      history: room.history,
+      players: room.players,
+      awards: computeAwards(room.history, room.players)
+    };
+    // Send stats to all connected clients before deleting the room
+    io.to(roomId).emit('game-ended', finalStats);
+    
+    // Delete the room to free RAM
+    delete rooms[roomId];
+    delete roomActivity[roomId];
+    
+    console.log(`[END-GAME] Room ${roomId} deleted. Active rooms: ${Object.keys(rooms).length}`);
+    cb({ ok: true, finalStats });
   });
 
   socket.on('disconnecting', () => {
