@@ -496,10 +496,24 @@ io.on('connection', (socket) => {
     myRooms.forEach(roomId => {
       const room = rooms[roomId];
       if (!room) return;
+      
+      const wasAdmin = room.players[socket.id]?.isAdmin;
       delete room.players[socket.id];
+      
+      // If admin disconnected and there are players left, transfer admin to another player
+      if (wasAdmin && Object.keys(room.players).length > 0) {
+        const nextPlayerId = Object.keys(room.players)[0];
+        room.players[nextPlayerId].isAdmin = true;
+        console.log(`[ADMIN TRANSFER] Room ${roomId}: Admin transferred from ${socket.id} to ${nextPlayerId} (${room.players[nextPlayerId].name})`);
+      }
+      
       // Optional: if no players left, delete room
-      if (Object.keys(room.players).length === 0) delete rooms[roomId];
-      else io.to(roomId).emit('room-state', room);
+      if (Object.keys(room.players).length === 0) {
+        delete rooms[roomId];
+        console.log(`[CLEANUP] Room ${roomId} deleted (no players left)`);
+      } else {
+        io.to(roomId).emit('room-state', room);
+      }
     });
   });
 
