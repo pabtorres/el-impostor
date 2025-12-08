@@ -6,5 +6,5 @@ const isPrivateIp = /^((10\.)|(192\.168\.)|(172\.(1[6-9]|2[0-9]|3[0-1])\.))/.tes
 window.APP_CONFIG = {
   backendUrl: (isLocalhost || isPrivateIp)
     ? 'http://localhost:4000'
-    : 'https://impostor-backend-production-941e.up.railway.app'
+    : 'https://el-impostor-api.ptorresg.cl'
 };
