@@ -1,5 +1,7 @@
 # el-impostor
 
+![El Impostor](./frontend/public/images/main-page-image-2.jpg)
+
 A real-time multiplayer game where players identify the impostor using Socket.io and React.
 
 ## Setup & Installation
