@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 
-export default function Lobby({ socket, onShowAbout }: any){
+export default function Lobby({ socket, onShowAbout, onShowInstructions }: any){
 const [roomId, setRoomId] = useState('room-1')
 const [name, setName] = useState('')
 const [cardsPerPlayer, setCardsPerPlayer] = useState('1')
@@ -34,7 +34,7 @@ if (res.error) alert(res.error)
 
 return (
 <div style={{display:'flex', flexDirection:'column', alignItems:'center', minHeight:'100vh'}}>
-<div className="card" style={{maxWidth:'500px', width:'100%'}}>
+<div className="card" style={{maxWidth:'550px', width:'100%'}}>
 <h2>El Impostor — Lobby</h2>
 <div style={{display:'flex', justifyContent:'center', marginBottom:'20px'}}>
 <img 
@@ -59,9 +59,10 @@ return (
 
 
 <div style={{display:'flex', gap:8, marginTop:12}}>
-<button onClick={createRoom}>🏠 Crear sala</button>
-<button onClick={joinRoom}>➕ Unirse</button>
-<button onClick={onShowAbout} style={{marginLeft:'auto'}}>ℹ️ Sobre el proyecto</button>
+    <button onClick={createRoom}>🏠 Crear sala</button>
+    <button onClick={joinRoom}>➕ Unirse</button>
+    <button onClick={onShowInstructions} style={{marginLeft:'auto'}}>❓ ¿Cómo jugar?</button>
+    <button onClick={onShowAbout} style={{marginLeft:'auto'}}>ℹ️ Sobre el proyecto</button>
 </div>
 
 

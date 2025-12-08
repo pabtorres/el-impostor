@@ -4,6 +4,7 @@ import Lobby from './components/Lobby'
 import CardSubmission from './components/CardSubmission'
 import Game from './components/Game'
 import About from './components/About'
+import Instructions from './components/Instructions'
 
 declare global {
   interface Window {
@@ -44,6 +45,7 @@ const [roomState, setRoomState] = useState<any>(null)
 const [playerId, setPlayerId] = useState<string | null>(null)
 const [endGameData, setEndGameData] = useState<any>(null)
 const [showAbout, setShowAbout] = useState<boolean>(false)
+const [showInstructions, setShowInstructions] = useState<boolean>(false)
 
 
 useEffect(() => {
@@ -178,10 +180,12 @@ style={{width:'100%', padding:'14px', backgroundColor:'#2196f3', color:'white', 
 
 return (
 <div className="app-root">
-{showAbout ? (
+{showInstructions ? (
+  <Instructions onBack={()=>setShowInstructions(false)} />
+) : showAbout ? (
   <About onBack={()=>setShowAbout(false)} />
 ) : !roomState ? (
-  <Lobby socket={socket} onShowAbout={()=>setShowAbout(true)} />
+  <Lobby socket={socket} onShowAbout={() => setShowAbout(true)} onShowInstructions={() => setShowInstructions(true)} />
 ) : roomState.gameState === 'waiting' || roomState.gameState === 'submitting' ? (
   <CardSubmission socket={socket} roomState={roomState} playerId={playerId} />
 ) : (
