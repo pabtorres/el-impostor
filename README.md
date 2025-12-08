@@ -1,6 +1,6 @@
 # el-impostor
 
-![El Impostor](./frontend/public/images/main-page-image-2.jpg)
+<img src="./frontend/public/images/main-page-image-2.jpg" alt="El Impostor" width="300" />
 
 A real-time multiplayer game where players identify the impostor using Socket.io and React.
 
