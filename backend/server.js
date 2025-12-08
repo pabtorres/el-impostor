@@ -256,10 +256,21 @@ io.on('connection', (socket) => {
     const room = rooms[roomId];
     if (!room || !room.currentRound) return cb({ error: 'No round' });
     recordActivity(roomId);
-    if (targetPlayerId === socket.id) return cb({ error: 'No puedes votarte a ti mismo' });
-    if (!room.players[targetPlayerId]) return cb({ error: 'Jugador no válido' });
 
-    room.currentRound.votes[socket.id] = targetPlayerId;
+    let finalVote = targetPlayerId;
+
+    // If impostor votes for themselves, send a random vote instead
+    if (socket.id === room.currentRound.impostorId && targetPlayerId === socket.id) {
+      const otherPlayers = Object.keys(room.players).filter(pid => pid !== socket.id);
+      finalVote = otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
+    } else if (targetPlayerId === socket.id) {
+      // Non-impostor cannot vote for themselves
+      return cb({ error: 'No puedes votarte a ti mismo' });
+    }
+
+    if (!room.players[finalVote]) return cb({ error: 'Jugador no válido' });
+
+    room.currentRound.votes[socket.id] = finalVote;
 
     // traceability: count votes
     const votes = Object.values(room.currentRound.votes);

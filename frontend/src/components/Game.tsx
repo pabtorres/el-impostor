@@ -134,7 +134,7 @@ return (
 ) : (<p style={{marginTop:12}}>No hay ronda privada para ti ahora.</p>)}
 
 
-<Voting socket={socket} players={roomState.players} tally={tally} roomId={roomState.id} playerId={playerId} />
+<Voting socket={socket} players={roomState.players} tally={tally} roomId={roomState.id} playerId={playerId} isImpostor={myPrivate?.isImpostor || false} />
 
 {roundMessage && (
 <div style={{marginTop:12, padding:16, backgroundColor:'#fff3cd', borderRadius:8, border:'2px solid #ffc107', textAlign:'center'}}>
