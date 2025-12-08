@@ -40,6 +40,50 @@ The frontend will automatically open at `http://localhost:5173`
 
 ## Project Evolution & Knowledge Base
 
+### v1.1.0 - Gameplay Enhancements & Resilience (December 2025)
+
+#### New Features
+- **Starting Player Indicator**: Shows which player should speak first each round
+  - Players shuffled into random order at game start
+  - Rotates through players each round for fair turn order
+  - Configurable toggle in waiting room (admin can enable/disable)
+- **Impostor Auto-Vote**: Impostor can click "Vote random" on themselves to cast a random vote
+  - Prevents impostors from refusing to vote
+  - Enables hidden voting strategy for impostors
+- **DEV MODE: Quick Start**: Fast QA testing with auto-generated 3-player rooms with bot players
+  - Bots auto-vote after 2 seconds
+  - Skips manual card setup for rapid iteration
+  - Limited to 3 test rooms max to prevent resource abuse
+- **Admin Transition**: Auto-transfers admin rights when room creator disconnects
+  - Next remaining player becomes admin
+  - Prevents game from being stuck in "waiting for admin" state
+  - Enables game continuation if players drop connection
+
+#### Bug Fixes & Resilience Improvements
+- **Fixed impostor self-vote rejection**: Backend now correctly handles impostor self-votes with random target assignment
+- **Player order initialization**: Added safety check for rooms missing playerOrder (backward compatibility)
+- **Dev mode stats initialization**: Fixed crash when creating test rooms without stats object
+- **Admin disconnection handling**: Room now remains playable with automatic admin reassignment
+- **Vote validation**: Improved vote processing order to prevent race conditions
+
+#### QA & Testing Features
+- **Comprehensive debug logging**: Added `[DEBUG]`, `[BOT]`, and `[ADMIN TRANSFER]` logs for tracing game state
+- **Dev mode resource limits**: Maximum 3 concurrent test rooms to guard resources
+- **Auto-cleanup enhanced**: Rooms clean up after 30 minutes of inactivity
+- **Console visibility**: Frontend logs reveal component renders and room-state changes
+
+#### UI/UX Improvements
+- **Starting player display**: Blue info box showing current starting player during active rounds
+- **Admin options panel**: Grouped game options in waiting room (currently: toggle starting player indicator)
+- **Button responsiveness**: Improved card width (600px) for proper multi-button alignment
+- **Feature toggles**: Players can customize gameplay experience (e.g., disable starting player indicator if preferred)
+
+#### Performance & Stability
+- **Reduced server memory pressure**: Dev mode room limit prevents uncontrolled growth
+- **Faster QA iteration**: Bot players eliminate manual testing setup time
+- **Backward compatibility**: Old rooms without new features continue to work seamlessly
+- **Error handling**: Enhanced error messages and graceful fallbacks
+
 ### v1.0.0 - Full Release (December 2025)
 
 #### Core Features Implemented
