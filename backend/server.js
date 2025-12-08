@@ -161,7 +161,8 @@ io.on('connection', (socket) => {
       gameState: 'waiting',
       cardsPerPlayer,
       history: [],
-      stats: {}
+      stats: {},
+      showStartingPlayer: true  // Feature toggle for starting player indicator
     };
     
     // Add players with pre-submitted cards
@@ -181,6 +182,10 @@ io.on('connection', (socket) => {
     const allCards = Object.values(rooms[roomId].players).flatMap(p => p.cards);
     rooms[roomId].deck = [...allCards];
     rooms[roomId].gameState = 'playing';
+    
+    // Initialize shuffled player order for starting player rotation
+    rooms[roomId].playerOrder = fakePlayerIds.sort(() => Math.random() - 0.5);
+    rooms[roomId].currentStarterIndex = 0;
     
     console.log(`[DEV MODE] Room ${roomId} ready with ${fakePlayerIds.length} players, deck: ${rooms[roomId].deck.length} cards`);
     
@@ -204,7 +209,8 @@ io.on('connection', (socket) => {
       deck: [],
       currentRound: null,
       history: [],
-      stats: {}
+      stats: {},
+      showStartingPlayer: true  // Feature toggle for starting player indicator
     };
 
     recordActivity(roomId);
@@ -234,6 +240,17 @@ io.on('connection', (socket) => {
       return cb({ error: `Submit exactly ${room.cardsPerPlayer} cards` });
 
     player.cards = cards;
+    io.to(roomId).emit('room-state', room);
+    cb({ ok: true });
+  });
+
+  socket.on('toggle-starting-player', ({ roomId, enabled }, cb) => {
+    const room = rooms[roomId];
+    if (!room) return cb({ error: 'Room not found' });
+    
+    room.showStartingPlayer = enabled;
+    console.log(`[DEBUG] Toggle starting player feature in room ${roomId}: ${enabled}`);
+    
     io.to(roomId).emit('room-state', room);
     cb({ ok: true });
   });
@@ -281,13 +298,25 @@ io.on('connection', (socket) => {
       assignments[pid] = { card: pid === impostorId ? null : chosenCard, isImpostor: pid === impostorId };
     });
 
+    // Determine starting player for this round
+    // Initialize playerOrder if not exists (fallback for rooms created before this feature)
+    if (!room.playerOrder || room.currentStarterIndex === undefined) {
+      const playerIds = Object.keys(room.players);
+      room.playerOrder = playerIds.sort(() => Math.random() - 0.5);
+      room.currentStarterIndex = 0;
+    }
+    
+    const startingPlayerId = room.playerOrder[room.currentStarterIndex];
+    room.currentStarterIndex = (room.currentStarterIndex + 1) % room.playerOrder.length;
+    
     // Initialize votes tracking
     room.currentRound = {
       chosenCard,
       assignments,
       votes: {}, // voterId -> votedPlayerId
       startedAt: Date.now(),
-      impostorId
+      impostorId,
+      startingPlayerId
     };
 
     // Tell each player their private info

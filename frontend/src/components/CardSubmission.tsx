@@ -25,6 +25,12 @@ export default function CardSubmission({ socket, roomState, playerId }: any) {
     })
   }
 
+  const toggleStartingPlayer = () => {
+    socket.emit('toggle-starting-player', { roomId: roomState.id, enabled: !roomState.showStartingPlayer }, (res: any) => {
+      if (res.error) alert(res.error)
+    })
+  }
+
   const allSubmitted = Object.values(roomState.players).every((p: any) => p.cards && p.cards.length > 0)
   const isAdmin = player?.isAdmin
   const playerCount = Object.keys(roomState.players).length
@@ -88,6 +94,26 @@ export default function CardSubmission({ socket, roomState, playerId }: any) {
 
       {isAdmin && (
         <div style={{ marginTop: 12 }}>
+          <div style={{ marginBottom: 12, padding: 12, backgroundColor: '#f5f5f5', borderRadius: 8 }}>
+            <p style={{ margin: '0 0 8px 0', fontWeight: 600 }}>Opciones del Juego:</p>
+            <button
+              onClick={toggleStartingPlayer}
+              style={{
+                width: '100%',
+                backgroundColor: roomState.showStartingPlayer ? '#2196f3' : '#999',
+                color: 'white',
+                padding: '8px',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 500,
+                marginBottom: 8
+              }}
+            >
+              {roomState.showStartingPlayer ? '🎤 Mostrar jugador que inicia' : '🎤 Ocultar jugador que inicia'}
+            </button>
+          </div>
+
           <button 
             onClick={startGame} 
             disabled={!canStartGame}

@@ -119,6 +119,15 @@ return (
 {myPrivate ? (
 <div style={{marginTop:12}}>
 <h4>Ronda en curso</h4>
+
+{roomState.currentRound?.startingPlayerId && roomState.showStartingPlayer && (
+<div style={{marginBottom:12, padding:12, backgroundColor:'#e3f2fd', borderRadius:8, border:'2px solid #2196f3', textAlign:'center'}}>
+<p style={{margin:0, fontWeight:600, color:'#1976d2'}}>
+🎤 Jugador que inicia: <strong>{roomState.players[roomState.currentRound.startingPlayerId]?.name || 'Unknown'}</strong>
+</p>
+</div>
+)}
+
 {myPrivate.isImpostor ? (
 <>
 <p style={{color:'#d9534f', fontWeight:'bold'}}>¡Eres el impostor!</p>
