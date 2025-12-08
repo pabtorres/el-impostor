@@ -137,6 +137,59 @@ function computeAwards(history, players) {
 io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
 
+  // DEV MODE: Create test room with fake players and cards
+  socket.on('dev-quick-start', ({ roomId }, cb) => {
+    console.log('[DEV MODE] Creating test room:', roomId);
+    
+    // Limit dev test rooms to 3 to prevent resource abuse
+    const devRooms = Object.keys(rooms).filter(id => id.startsWith('dev-test-'));
+    if (devRooms.length >= 3) {
+      console.log('[DEV MODE] Max test rooms (3) reached. Delete old rooms first.');
+      return cb({ error: 'Límite de salas de prueba alcanzado (3 máximo). Cierra salas antiguas primero.' });
+    }
+    
+    // Create room with 3 fake players
+    const fakePlayerIds = ['bot-player-1', 'bot-player-2', socket.id];
+    const fakePlayerNames = ['Bot Alice', 'Bot Bob', 'You'];
+    const cardsPerPlayer = 1;
+    
+    rooms[roomId] = {
+      id: roomId,
+      players: {},
+      deck: [],
+      playedCards: [],
+      gameState: 'waiting',
+      cardsPerPlayer,
+      history: [],
+      stats: {}
+    };
+    
+    // Add players with pre-submitted cards
+    fakePlayerIds.forEach((pid, idx) => {
+      rooms[roomId].players[pid] = {
+        id: pid,
+        name: fakePlayerNames[idx],
+        cards: [`Card-${String.fromCharCode(65 + idx)}`] // Card-A, Card-B, Card-C
+      };
+    });
+    
+    // Join the real player to the room
+    socket.join(roomId);
+    recordActivity(roomId);
+    
+    // Auto-start the game
+    const allCards = Object.values(rooms[roomId].players).flatMap(p => p.cards);
+    rooms[roomId].deck = [...allCards];
+    rooms[roomId].gameState = 'playing';
+    
+    console.log(`[DEV MODE] Room ${roomId} ready with ${fakePlayerIds.length} players, deck: ${rooms[roomId].deck.length} cards`);
+    
+    // Emit room state
+    io.to(roomId).emit('room-state', rooms[roomId]);
+    
+    cb({ ok: true, roomId });
+  });
+
   socket.on('create-room', ({ roomId, playerName, cardsPerPlayer }, cb) => {
     if (rooms[roomId]) return cb({ error: 'Room exists' });
 
@@ -247,6 +300,26 @@ io.on('connection', (socket) => {
         });
       }
     });
+
+    // Auto-vote for bot players after a short delay
+    setTimeout(() => {
+      const botPlayers = playerIds.filter(pid => pid.startsWith('bot-player-'));
+      botPlayers.forEach(botId => {
+        if (room.currentRound && !room.currentRound.votes[botId]) {
+          // Bot votes randomly (but not for themselves)
+          const otherPlayers = playerIds.filter(pid => pid !== botId);
+          const randomTarget = otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
+          
+          room.currentRound.votes[botId] = randomTarget;
+          console.log(`[BOT] ${room.players[botId]?.name} voted for ${room.players[randomTarget]?.name}`);
+          
+          // Emit vote update
+          const votes = Object.values(room.currentRound.votes);
+          const tally = votes.reduce((acc, v) => { acc[v] = (acc[v]||0)+1; return acc; }, {});
+          io.to(roomId).emit('vote-update', { votes: room.currentRound.votes, tally });
+        }
+      });
+    }, 2000); // Bots vote after 2 seconds
 
     io.to(roomId).emit('room-state', room);
     cb({ ok: true });

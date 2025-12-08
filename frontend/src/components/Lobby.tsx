@@ -31,6 +31,17 @@ if (res.error) alert(res.error)
 })
 }
 
+const quickStartDev = () => {
+const testRoomId = 'dev-test-' + Date.now();
+socket.emit('dev-quick-start', { roomId: testRoomId }, (res:any) => {
+  if (res.error) {
+    alert(res.error);
+  } else {
+    console.log('[DEV MODE] Quick start successful, room:', testRoomId);
+  }
+});
+}
+
 
 return (
 <div style={{display:'flex', flexDirection:'column', alignItems:'center', minHeight:'100vh'}}>
@@ -63,6 +74,24 @@ return (
     <button onClick={joinRoom}>➕ Unirse</button>
     <button onClick={onShowInstructions} style={{marginLeft:'auto'}}>❓ ¿Cómo jugar?</button>
     <button onClick={onShowAbout} style={{marginLeft:'auto'}}>ℹ️ Sobre el proyecto</button>
+</div>
+
+<div style={{marginTop:12, paddingTop:12, borderTop:'1px dashed #ccc'}}>
+    <button 
+      onClick={quickStartDev} 
+      style={{
+        width:'100%',
+        backgroundColor:'#ff9800',
+        color:'white',
+        fontWeight:'bold',
+        padding:'8px'
+      }}
+    >
+      🚀 MODO DESARROLLADOR: Inicio rápido (3 jugadores falsos)
+    </button>
+    <p className="small" style={{marginTop:4, fontSize:'11px', color:'#666'}}>
+      Omite la configuración - crea una sala de prueba con bots para control de calidad (QA) o aprender a jugar.
+    </p>
 </div>
 
 
